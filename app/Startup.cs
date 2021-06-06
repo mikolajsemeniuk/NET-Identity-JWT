@@ -36,6 +36,7 @@ namespace app
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ITodoRepository, TodoRepository>();
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using app.Interfaces;
 using app.Models;
+using app.Payloads;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -31,8 +32,8 @@ namespace app.Services
         {
             var claims = new List<Claim>()
             {
-                new Claim(JwtRegisteredClaimNames.NameId, "1"),
-                new Claim(JwtRegisteredClaimNames.UniqueName, "username")
+                new Claim(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName)
 
             };
             var roles = await _userManager.GetRolesAsync(user);
@@ -47,6 +48,25 @@ namespace app.Services
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescription);
             return tokenHandler.WriteToken(token);
+        }
+
+        public async Task<IEnumerable<UserPayload>> GetUserAsync()
+        {
+            return await _userManager.Users
+                .Include(user => user.Todos)
+                .Select(user => new UserPayload
+                {
+                    UserId = user.Id,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Todos = user.Todos.Select(todo => new TodoPayload
+                    {
+                        TodoId = todo.TodoId,
+                        Name = todo.Name,
+                        UserId = user.Id
+                    }).ToList()
+                })
+                .ToListAsync();
         }
 
         public async Task<string> SignInAsync(string email, string password)

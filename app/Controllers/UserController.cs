@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using app.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace app.Controllers
@@ -20,5 +21,10 @@ namespace app.Controllers
         [HttpPost("signup/{username}/{email}/{password}")]
         public async Task<ActionResult> SignUpUserAsync(string username, string email, string password) =>
             Ok(new { Token = await _repository.SignUpAsync(username, email, password) });
+
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<ActionResult> GetUsersAsync() =>
+            Ok(await _repository.GetUserAsync());
     }
 }
